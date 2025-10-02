@@ -1,4 +1,4 @@
-name: Test Install libc++
+name: Test Install GTest
 
 on:
   workflow_dispatch: 
