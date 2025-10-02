@@ -1,0 +1,33 @@
+name: install-gtest
+description: Install Google Test built with libc++, with or without memory sanitizer instrumentation
+author: David Brill
+inputs:
+  gtest_version:
+    description: Version of gtest to install 
+    required: true
+  libcxx_version:
+    description: Version of libc++ that is already installed
+    required: true
+  msan:
+    description: Install binaries instrumented with memory sanitization
+    required: false
+    default: false
+runs:
+  using: composite
+  steps:
+    - id: generate-name
+      run: | 
+        MSAN=${{ inputs.msan }}
+        if [[ "$MSAN" != "false" ]]; then 
+          SUFFIX=-msan
+        fi
+        echo "package-name=googletest-${{ inputs.gtest_version }}-libcxx-${{ inputs.libcxx_version }}$SUFFIX" >> $GITHUB_OUTPUT
+      shell: bash
+    - run: |
+        wget $(wget -q -O - https://api.github.com/repos/dvd0bvb/build-gtest/releases/tags/${{ inputs.gtest_version }}-libcxx-${{ inputs.libcxx_version }} |  jq -r '.assets[] | select(.name == "${{ steps.generate-name.outputs.package-name }}.deb") | .browser_download_url')        
+        sudo dpkg -i ${{ steps.generate-name.outputs.package-name }}.deb
+      shell: bash
+
+branding:
+  icon: activity
+  color: gray-dark
